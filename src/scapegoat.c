@@ -14,6 +14,10 @@ t_sg_tree* sg_create_tree(double alpha) {
 	}
 	sg_tree = malloc(sizeof(t_sg_tree));
 	sg_tree->alpha = alpha;
+	sg_tree->root = NULL;
+	sg_tree->size = 0;
+	sg_tree->max_size = 0;
+	sg_tree->h_alpha = -INFINITY;
 	return sg_tree;
 }
 
