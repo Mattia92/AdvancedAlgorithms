@@ -4,7 +4,7 @@
 
 int main() {
 	t_sg_tree* tree;
-	unsigned int i, k = 1000;
+	unsigned int i, k = 10000;
 
 	printf("Ciao mondo\n");
 
@@ -25,11 +25,11 @@ int main() {
 	sg_search(tree, 1);
 
 	for (i = 0; i < k; i++) {
-		sg_insert(tree, rand() % 10);
+		sg_insert(tree, rand() % k);
 	}
 
 	for (i = 0; i < k; i++) {
-		sg_delete(tree, rand() % 10);
+		sg_delete(tree, rand() % k);
 	}
 
 	printf("Addio mondo\n");

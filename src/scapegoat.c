@@ -89,10 +89,16 @@ void sg_on_delete(t_sg_tree* sg_tree) {
     printf("ON DELETE - size = %d, h_alpha = %d\n", sg_tree->size, sg_tree->h_alpha);
     #endif
 
+    if (sg_tree->size < 3) {
+    	return;
+    }
+
     // Check if rebalance is needed		
 	if (sg_tree->size < sg_tree->alpha * sg_tree->max_size) {
 		sg_tree->root = sg_rebuild(sg_tree->size, sg_tree->root);
 		sg_tree->max_size = sg_tree->size;
+		// printf("%d %d %d\n", sg_tree->root, sg_tree->root->left, sg_tree->root->right);
+		printf("%d \n", sg_tree->root->left);
 		#ifdef DEBUG
 		printf("ON DELETE - Tree rebalanced: new root is %d\n", sg_tree->root->key);
 		#endif
@@ -140,6 +146,7 @@ char sg_delete(t_sg_tree* sg_tree, int key) {
 					sg_tree->root = NULL;
 				// Case 1.2: to_remove non root
 				} else {
+					assert(to_remove != sg_tree->root);
 					#ifdef DEBUG
 					printf("DELETE - Case 1.2: node to remove is a leaf and not the root, its parent has key = %d\n", parent->key);
 					#endif
@@ -171,6 +178,7 @@ char sg_delete(t_sg_tree* sg_tree, int key) {
 					sg_tree->root = temp;
 				// Case 2.2: to_remove is not the root
 				} else {
+					assert(to_remove != sg_tree->root);
 					#ifdef DEBUG
 					printf("DELETE - Case 2.2: node to remove is not the root, changing parent %d child with %d\n",
 						parent->key, temp->key);
@@ -266,6 +274,7 @@ void sg_on_insert(t_sg_tree* sg_tree, t_sg_node** stack, unsigned int stack_top)
 	// stack_top equals the depth of the newly inserted node
 	t_sg_node *scapegoat;
 	unsigned int sg_scape_left_size, sg_scape_right_size, sg_scape_size = 0;
+	assert((stack_top == 0 && stack == NULL) || (stack_top > 0 && stack != NULL));
 	#ifdef DEBUG
 	printf("ON INSERT - Updating tree after node insertion at depth %d\n", stack_top);
 	#endif
@@ -339,7 +348,6 @@ void sg_on_insert(t_sg_tree* sg_tree, t_sg_node** stack, unsigned int stack_top)
 					stack[stack_top - 1]->left = sg_rebuild(sg_scape_size, scapegoat);
 				}
 			
-				free(stack);
 				return;
 			}
 		}
@@ -450,8 +458,23 @@ unsigned int sg_calc_size(t_sg_node* sg_node) {
 
 t_sg_node* sg_rebuild(unsigned int sg_scape_size, t_sg_node* sg_scape_node) {
 	// sg_dummy_node is a concrete node allocated on the stack
-	t_sg_node sg_dummy_node;
-	sg_build_tree(sg_scape_size, sg_flatten(sg_scape_node, &sg_dummy_node));
+	t_sg_node sg_dummy_node, *sg_flatten_node, *temp;
+	sg_dummy_node.key = 0;
+	sg_dummy_node.left = NULL;
+	sg_dummy_node.right = NULL;
+	sg_flatten_node = sg_flatten(sg_scape_node, &sg_dummy_node);
+	temp = sg_flatten_node;
+	while (temp != NULL) {
+		printf("%d ", temp->key);
+		temp->left = NULL;
+		temp = temp->right;
+	}
+	printf("\n");
+	assert(sg_flatten_node != NULL);
+	printf("%d\n", sg_scape_size);
+	sg_build_tree(sg_scape_size, sg_flatten_node);
+	printf("%08x %08x %08x\n", &sg_dummy_node, sg_dummy_node.left, sg_dummy_node.right);
+	assert(sg_dummy_node.left != NULL);
 	return sg_dummy_node.left;
 }
 
@@ -465,14 +488,15 @@ t_sg_node* sg_flatten(t_sg_node* sg_node_x, t_sg_node* sg_node_y) {
 
 t_sg_node* sg_build_tree(unsigned int sg_size, t_sg_node* sg_node_x) {
 	t_sg_node *sg_node_r, *sg_node_s;
+	assert(sg_node_x != NULL);
 	if (sg_size == 0) {
 		sg_node_x->left = NULL;
 		return sg_node_x;
 	}
-
 	sg_node_r = sg_build_tree(ceil((sg_size - 1) / 2), sg_node_x);
+	assert(sg_node_r != NULL);
 	sg_node_s = sg_build_tree(floor((sg_size - 1) / 2), sg_node_r->right);
-
+	assert(sg_node_s != NULL);
 	sg_node_r->right = sg_node_s->left;
 	sg_node_s->left = sg_node_r;
 
