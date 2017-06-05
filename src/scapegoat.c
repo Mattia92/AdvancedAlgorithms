@@ -38,10 +38,10 @@ t_sg_node* sg_search(t_sg_tree* tree, int key) {
 		}
 
 		if (key > temp->key) {
-			printf("Key = %d > temp->key = %d, moving to right child\n", key, temp->key);
+			printf("Key = %d > %d, moving to right child\n", key, temp->key);
 			temp = temp->right;
 		} else {
-			printf("Key = %d < temp->key = %d, moving to left child\n", key, temp->key);
+			printf("Key = %d < %d, moving to left child\n", key, temp->key);
 			temp = temp->left;
 		}
 	}
@@ -50,8 +50,7 @@ t_sg_node* sg_search(t_sg_tree* tree, int key) {
 
 // Update h_alpha
 void sg_update_h_alpha(t_sg_tree* sg_tree) {
-	printf("Updating h_alpha = %d\n", sg_tree->h_alpha);
-	sg_tree->h_alpha = sg_tree->size == 0 ? 0 : floor(log(sg_tree->size) / log(1 / sg_tree->alpha));
+	sg_tree->h_alpha = sg_tree->size == 0 ? 0 : (int)floor(log(sg_tree->size) / log(1 / sg_tree->alpha));
 	printf("h_alpha updated to %d, tree size %d\n", sg_tree->h_alpha, sg_tree->size);
 }
 
@@ -60,27 +59,34 @@ void sg_on_delete(t_sg_tree* sg_tree) {
 	printf("Updating tree after node deletion\n");
 	// Decrease tree size
     --sg_tree->size;
-
+    printf("Size of the tree decreased to %d\n", sg_tree->size);
     // Update h_alpha
     sg_update_h_alpha(sg_tree);
     // Check if rebalance is needed		
 	if (sg_tree->size < sg_tree->alpha * sg_tree->max_size) {
+		printf("Rebalancing: tree size %d < %.2f\n", sg_tree->size,
+			sg_tree->alpha * sg_tree->max_size);
 		sg_tree->root = sg_rebuild(sg_tree->size, sg_tree->root);
+		printf("New root is %d\n", sg_tree->root->key);
 		sg_tree->max_size = sg_tree->size;
+		printf("Tree max size = %d\n", sg_tree->max_size);
 	}
 }
 
 char sg_delete(t_sg_tree* sg_tree, int key) {
 	t_sg_node *parent = NULL, *to_remove = sg_tree->root, *replacement, *temp;
 	char is_right_child;
+	printf("Removing key = %d\n", key);
 
 	if (to_remove == NULL) {
+		printf("Tree is empty, cannot remove anything\n");
 		return FALSE;
 	}
 
 	while(to_remove != NULL) {
 		if (to_remove->key == key) {
 			// to_remove is the node to be deleted
+			printf("key = %d found\n", key);
 
 			// Three cases
 			// 1) to_remove is a leaf
@@ -89,16 +95,22 @@ char sg_delete(t_sg_tree* sg_tree, int key) {
 
 			// Case 1: to_remove is a leaf
 			if (to_remove->left == NULL && to_remove->right == NULL) {
+				printf("Case 1: node to remove is a leaf\n");
+
 				// Case 1.1: to_remove root
 				if (parent == NULL) {
 					assert(to_remove == sg_tree->root);
+					printf("Case 1.1: node to remove is a leaf and the root\n");
 					sg_tree->root = NULL;
 				// Case 1.2: to_remove non root
 				} else {
+					printf("Case 1.2: node to remove is a leaf and not the root, its parent has key = %d\n", parent->key);
 					if (is_right_child) {
+						assert(parent->right->key == key);
                 		parent->right = NULL;
 					}
              		else {
+             			assert(parent->left->key == key);
              			parent->left = NULL;
              		}
 				}
@@ -107,31 +119,51 @@ char sg_delete(t_sg_tree* sg_tree, int key) {
 			} else if (to_remove->left == NULL || to_remove->right == NULL) {
 				// temp is the only child of to_remove
 				temp = to_remove->left != NULL ? to_remove->left : to_remove->right;
+				printf("Case 2: node to remove has only one child with key = %d\n", temp->key);
+
 				assert(temp != NULL);
 				// Case 2.1: to_remove is the root
 				if (parent == NULL) {
 					assert(to_remove == sg_tree->root);
+					printf("Case 2.1: node to remove is the root, changing root to %d\n", temp->key);
 					sg_tree->root = temp;
 				// Case 2.2: to_remove is not the root
 				} else {
+					printf("Case 2.2: node to remove is not the root, changing parent %d child with %d",
+						parent->key, temp->key);
 					if (is_right_child) {
+						assert(parent->right->key == key);
 						parent->right = temp;
 					} else {
+						assert(parent->left->key == key);
 						parent->left = temp;
 					}
 				}
 				free(to_remove);
 			// Case 3: to_remove has two children
 			} else {
+				printf("Case 3: node to remove has two children left %d and right %d\n"
+					"Searching replacement node as the highest node less than the one to remove\n",
+					to_remove->left->key,
+					to_remove->right->key);
+
 				// Note: to_remove has it's key always overwritten with the one
 				// in the replacement node. to_remove is not freed in this case.
 
-				// Find replacement i.e. the highests node less than to_remove.
+				// Find replacement i.e. the highest node less than to_remove.
 				// It is the largest member in the left subtree.
 				replacement = to_remove->left;
-
+				
 				// Case 3.1
 				if (replacement->right == NULL) {
+
+					printf("Case 3.1: Found replacement node %d (with no right child),\n"
+						"Rep. node is the left child of to remove node\n"
+						"Now replacing node to remove key and right child with the ones of the replacement node\n"
+						"Left child of node to remove untouched\n"
+						"Deleting replacement node\n",
+						replacement->key);
+
 					to_remove->key = replacement->key;
 					to_remove->left = replacement->left;
 					free(replacement);
@@ -140,6 +172,13 @@ char sg_delete(t_sg_tree* sg_tree, int key) {
 					while (replacement->right->right != NULL) {
 						replacement = replacement->right;
 					}
+
+					printf("Case 3.1: Found replacement node %d (with no right child) which parent is %d\n"
+						"Replacing node to remove key with replacement node key\n"
+						"Replacing replacement parent's right child with left child of replacement node\n"
+						"Deleting replacement node\n",
+						replacement->right->key, replacement->key);
+
 					to_remove->key = replacement->right->key;
 					temp = replacement->right;
 					replacement->right = replacement->right->left;
@@ -154,33 +193,43 @@ char sg_delete(t_sg_tree* sg_tree, int key) {
 
 		parent = to_remove;
 		if (key > to_remove->key) {
+			printf("key = %d > %d, moving to right child\n", key, to_remove->key);
 			to_remove = to_remove->right;
 			is_right_child = TRUE;
 		} else {
+			printf("key = %d > %d, moving to right child\n", key, to_remove->key);
 			to_remove = to_remove->left;
 			is_right_child = FALSE;
 		}
 	}
 
+	printf("key = %d not found, delete failed\n", key);
 	return FALSE;
 }
 
 void sg_on_insert(t_sg_tree* sg_tree, t_sg_node** stack, unsigned int stack_top) {
 	t_sg_node *scapegoat;
 	unsigned int sg_scape_left_size, sg_scape_right_size, sg_scape_size = 0;
+	printf("Updating tree after node insertion\n");
 	// Adjust tree vars
 	++sg_tree->size;
 	sg_tree->max_size = fmax(sg_tree->size, sg_tree->max_size);
 	sg_update_h_alpha(sg_tree);
+	printf("Tree: size = %d, max_size = %d, h_alpha = %d\n", sg_tree->size, sg_tree->max_size, sg_tree->h_alpha);
 	// Check if the newly inserted node is deep
 	if (stack_top > sg_tree->h_alpha) {
+		printf("New inserted node is deep, need to find a scapegoat to rebalance the tree\n");	
 		while (TRUE) {
+			assert(stack_top > 0);
+
 			// Search scapegoat
 			scapegoat = stack[--stack_top];
-
 			assert(scapegoat == stack[stack_top]);
+			assert(scapegoat != NULL);
 
-			// From now on stack[stack_top - 1] is the parent of scapegoat
+			printf("Searching at depth %d if %d is the scapegoat\n", stack_top, scapegoat->key);	
+
+			// From now on stack[stack_top - 1] is the parent of scapegoat if stack_top >= 1
 
 			// First iteration of the loop
 			if (sg_scape_size == 0) {
@@ -189,9 +238,11 @@ void sg_on_insert(t_sg_tree* sg_tree, t_sg_node** stack, unsigned int stack_top)
 				sg_scape_size = 1 + sg_scape_right_size + sg_scape_left_size;
 			// Further iterations, previous sizes must be reused 
 			} else if (scapegoat->right == stack[stack_top + 1]) {
+				// Previous node tested is the right child of current one
 				sg_scape_right_size = sg_scape_size;
 				sg_scape_left_size = sg_calc_size(scapegoat->left);
 			} else {
+				// Previous node tested is the left child of current one
 				sg_scape_right_size = sg_calc_size(scapegoat->right);
 				sg_scape_left_size = sg_scape_size;
 			}
@@ -200,24 +251,26 @@ void sg_on_insert(t_sg_tree* sg_tree, t_sg_node** stack, unsigned int stack_top)
 
 			if (sg_scape_left_size <= sg_tree->alpha * sg_scape_size && sg_scape_right_size <= sg_tree->alpha * sg_scape_size) {
 				// Node is alpha-weight-balanced
+				printf("Node %d is alpha-weight-balanced\n", scapegoat->key);
 			} else {
 				// Scapegoat found
+				printf("Scapegoat found! Node %d is not alpha-weight-balanced, rebalancing around it\n", scapegoat->key);
 
 				// Scapegoat is root
 				if (stack_top == 0) {
 					sg_tree->root = sg_rebuild(sg_scape_size, scapegoat);
 				// Scapegoat is not root
 				} else if (scapegoat == stack[stack_top - 1]->right) {
+					// Scapegoat is the right child of its parent
 					stack[stack_top - 1]->right = sg_rebuild(sg_scape_size, scapegoat);
 				} else {
+					// Scapegoat is the left child of its parent
 					stack[stack_top - 1]->left = sg_rebuild(sg_scape_size, scapegoat);
 				}
 			
 				free(stack);
 				return;
 			}
-
-			assert(stack_top >= 0);
 		}
 	}
 }
@@ -225,11 +278,14 @@ void sg_on_insert(t_sg_tree* sg_tree, t_sg_node** stack, unsigned int stack_top)
 char sg_insert(t_sg_tree* sg_tree, int key) {
 	// Stack to save the nodes traversed to reach insertion point
 	// insertion point max depth = h_alpha + 1
-	t_sg_node **stack;
-	t_sg_node *parent = sg_tree->root;
+	t_sg_node **stack, *parent = sg_tree->root;
 	unsigned int stack_top;
 
+	printf("Inserting key = %d\n", key);
+
 	if (parent == NULL) {
+		printf("Tree empty, adding %d as root\n", key);
+
 		parent = malloc(sizeof(t_sg_node));
 		parent->key = key;
 		parent->left = NULL;
@@ -247,13 +303,18 @@ char sg_insert(t_sg_tree* sg_tree, int key) {
 	while(TRUE) {
 		if (key == parent->key) {
 			// Found key, don't overwrite
+			printf("Key %d already present, insert failed\n", key);
+
 			free(stack);
 			return FALSE;
 		}
 
 		if (key > parent->key) {
+			printf("Key %d > %d\n", key, parent->key);
 			if (parent->right == NULL) {
 				// Insert right
+				printf("Adding %d as right child of it's parent\n", key);
+
 				parent->right = malloc(sizeof(t_sg_node));
 				parent->right->key = key;
 				parent->right->right = NULL;
@@ -264,8 +325,11 @@ char sg_insert(t_sg_tree* sg_tree, int key) {
 			}
 			parent = parent->right;
 		} else {
+			printf("Key %d < %d\n", key, parent->key);
 			if (parent->left == NULL) {
 				// Insert left
+				printf("Adding %d as left child of it's parent\n", key);
+
 				parent->left = malloc(sizeof(t_sg_node));
 				parent->left->key = key;
 				parent->left->right = NULL;
