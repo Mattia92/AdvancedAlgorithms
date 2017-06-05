@@ -13,12 +13,12 @@ typedef struct sg_tree {
 	unsigned int size;
 	unsigned int max_size;
 	double alpha; // 0.5 <= alpha < 1
-	double h_alpha;
+	int h_alpha;
 } t_sg_tree;
 
 t_sg_tree* sg_create_tree(double alpha);
 void sg_delete_tree(t_sg_tree* sg_tree);
-char sg_search(t_sg_tree* tree, int key);
+t_sg_node* sg_search(t_sg_tree* tree, int key);
 void sg_update_h_alpha(t_sg_tree* sg_tree);
 void sg_on_delete(t_sg_tree* sg_tree);
 char sg_delete(t_sg_tree* sg_tree, int key);

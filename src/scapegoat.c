@@ -10,14 +10,15 @@
 t_sg_tree* sg_create_tree(double alpha) {
 	t_sg_tree* sg_tree;
 	if (alpha < 0.5 || alpha >= 1) {
-		printf("Invalid alpha\n");
+		printf("Invalid alpha = %.2f, please choose an alpha in [0.5, 1), using default 0.5\n", alpha);
 	}
+	printf("Creating scapegoat tree with alpha = %f\n", alpha);
 	sg_tree = malloc(sizeof(t_sg_tree));
 	sg_tree->alpha = alpha;
 	sg_tree->root = NULL;
 	sg_tree->size = 0;
 	sg_tree->max_size = 0;
-	sg_tree->h_alpha = -INFINITY;
+	sg_tree->h_alpha = 0;
 	return sg_tree;
 }
 
@@ -26,32 +27,40 @@ void sg_delete_tree(t_sg_tree* sg_tree) {
 }
 
 // 0 if not present, 1 if present
-char sg_search(t_sg_tree* tree, int key) {
+t_sg_node* sg_search(t_sg_tree* tree, int key) {
 	t_sg_node *temp = tree->root;
+	printf("Searching for key = %d\n", key);
 	while (temp != NULL) {
 		if (temp->key == key) {
 			// Found key
-			return TRUE;
+			printf("Key = %d found!\n", key);
+			return temp;
 		}
 
 		if (key > temp->key) {
+			printf("Key = %d > temp->key = %d, moving to right child\n", key, temp->key);
 			temp = temp->right;
 		} else {
+			printf("Key = %d < temp->key = %d, moving to left child\n", key, temp->key);
 			temp = temp->left;
 		}
 	}
-	return FALSE;
+	return NULL;
 }
 
 // Update h_alpha
 void sg_update_h_alpha(t_sg_tree* sg_tree) {
-	sg_tree->h_alpha = floor(log(sg_tree->size) / log(1 / sg_tree->alpha));
+	printf("Updating h_alpha = %d\n", sg_tree->h_alpha);
+	sg_tree->h_alpha = sg_tree->size == 0 ? 0 : floor(log(sg_tree->size) / log(1 / sg_tree->alpha));
+	printf("h_alpha updated to %d, tree size %d\n", sg_tree->h_alpha, sg_tree->size);
 }
 
 // Update sg_tree after node deletion and rebuild if needed
 void sg_on_delete(t_sg_tree* sg_tree) {
+	printf("Updating tree after node deletion\n");
 	// Decrease tree size
     --sg_tree->size;
+
     // Update h_alpha
     sg_update_h_alpha(sg_tree);
     // Check if rebalance is needed		
