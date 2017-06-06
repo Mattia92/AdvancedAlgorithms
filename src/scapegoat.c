@@ -8,6 +8,9 @@
 #define TRUE 1
 #define FALSE 0
 
+#define DEBUG 1
+#define SECURE_REBUILD 1
+
 t_sg_tree* sg_create_tree(double alpha) {
 	t_sg_tree* sg_tree;
 	if (alpha < 0.5 || alpha >= 1) {
@@ -499,7 +502,7 @@ unsigned int sg_calc_size(t_sg_node* node) {
 }
 
 t_sg_node* sg_rebuild(unsigned int n, t_sg_node* scapegoat) {
-	t_sg_node w, *z;
+	t_sg_node w, *z, *temp;
 	unsigned int size = sg_calc_size(scapegoat);
 	assert(n == size);
 

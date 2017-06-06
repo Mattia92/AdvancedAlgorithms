@@ -3,9 +3,6 @@
 #include <assert.h> /* assert */
 #include "scapegoat.h"
 
-#define DEBUG 1
-#define SECURE_REBUILD 1
-
 int main(void) {
 	t_sg_tree* tree;
 	unsigned int i, k = 10000, rand_max = 10000, size;
