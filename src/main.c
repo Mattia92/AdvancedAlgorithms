@@ -1,35 +1,43 @@
 #include <stdio.h>	/* printf */
 #include <stdlib.h> /* rand */
+#include <assert.h> /* assert */
 #include "scapegoat.h"
 
-int main() {
+#define DEBUG 1
+#define SECURE_REBUILD 1
+
+int main(void) {
 	t_sg_tree* tree;
-	unsigned int i, k = 10000;
+	unsigned int i, k = 10000, rand_max = 10000, size;
+	int val;
+	char res;
 
 	printf("Ciao mondo\n");
 
-	tree = sg_create_tree(0.66);
+	tree = sg_create_tree(0.55);
 
-	sg_insert(tree, 1);
-	sg_insert(tree, 2);
-	sg_insert(tree, 3);
-
-	sg_insert(tree, 1);
-
-	sg_search(tree, 1);
-
-	sg_delete(tree, 1);
-
-	// sg_delete(tree, 1);
-
-	sg_search(tree, 1);
+	assert(tree->size == 0);
 
 	for (i = 0; i < k; i++) {
-		sg_insert(tree, rand() % k);
+		size = sg_calc_size(tree->root);
+		val = rand() % rand_max;
+		res = sg_insert(tree, val);
+		assert(size + res == sg_calc_size(tree->root));
+	}
+
+	size = sg_calc_size(tree->root);
+
+	for (i = 0; i < k; i++) {
+		val = rand() % rand_max;
+		sg_search(tree, val);
+		assert(size == sg_calc_size(tree->root));
 	}
 
 	for (i = 0; i < k; i++) {
-		sg_delete(tree, rand() % k);
+		size = sg_calc_size(tree->root);
+		val = rand() % rand_max;
+		res = sg_delete(tree, val);
+		assert(size - res == sg_calc_size(tree->root));
 	}
 
 	printf("Addio mondo\n");
