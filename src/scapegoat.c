@@ -1,13 +1,16 @@
 #include <stdio.h>	/* printf */
 #include <math.h>	/* log, floor, ceil, fmax */
 #include <stdlib.h> /* malloc, free */
-#include <assert.h> /* assert */
 #include <limits.h> /* INT_MAX */
 #include "scapegoat.h"
 
 #define TRUE 1
 #define FALSE 0
 
+// FOR BENCHMARK: Uncomment the line below to disable assert
+// #define NDEBUG
+#include <assert.h> /* assert */
+// FOR BENCHMARK: Comment the lines below to disable DEBUG messages and safer tree rebuild procedure
 #define DEBUG
 #define SECURE_REBUILD
 
