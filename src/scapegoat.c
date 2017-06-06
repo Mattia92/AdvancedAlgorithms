@@ -8,26 +8,44 @@
 #define TRUE 1
 #define FALSE 0
 
-#define DEBUG 1
-#define SECURE_REBUILD 1
+#define DEBUG
+#define SECURE_REBUILD
 
+// Creates a tree with a given alpha
 t_sg_tree* sg_create_tree(double alpha) {
-	t_sg_tree* sg_tree;
+	t_sg_tree* tree;
 	if (alpha < 0.5 || alpha >= 1) {
 		printf("CREATE - Invalid alpha = %.2f, please choose an alpha in [0.5, 1), using default 0.5\n", alpha);
 	}
 	printf("CREATE - Creating scapegoat tree with alpha = %f\n", alpha);
-	sg_tree = malloc(sizeof(t_sg_tree));
-	sg_tree->alpha = alpha;
-	sg_tree->root = NULL;
-	sg_tree->size = 0;
-	sg_tree->max_size = 0;
-	sg_tree->h_alpha = 1;
-	return sg_tree;
+	tree = malloc(sizeof(t_sg_tree));
+	tree->alpha = alpha;
+	tree->root = NULL;
+	tree->size = 0;
+	tree->max_size = 0;
+	tree->h_alpha = 1;
+	return tree;
 }
 
+// Deletes all the nodes in the tree
 void sg_delete_tree(t_sg_tree* tree) {
-	// TODO
+	sg_delete_node(tree->root);
+	tree->root = NULL;
+	tree->size = 0;
+	tree->max_size = 0;
+	tree->h_alpha = 1;
+}
+
+// Recursively delete left and right child,
+// then free node itself
+void sg_delete_node(t_sg_node* node) {
+	if (node->left != NULL) {
+		sg_delete_node(node->left);
+	}
+	if (node->right != NULL) {
+		sg_delete_node(node->right);
+	}
+	free(node);
 }
 
 // NULL if not present, pointer to node if present
@@ -82,7 +100,7 @@ void sg_update_h_alpha(t_sg_tree* tree) {
 	tree->h_alpha = tree->size < 2 ? 1 : h_alpha(tree->size, tree->alpha);
 }
 
-// Update sg_tree after node deletion and rebuild if needed
+// Update tree after node deletion and rebuild tree from root if needed
 void sg_on_delete(t_sg_tree* tree) {
 	#ifdef DEBUG
 	printf("ON DELETE - START\n");
@@ -118,6 +136,7 @@ void sg_on_delete(t_sg_tree* tree) {
 	#endif
 }
 
+// 1 if key found and node deleted, 0 otherwise
 char sg_delete(t_sg_tree* tree, int key) {
 	t_sg_node *parent = NULL, *to_remove = tree->root, *replacement, *temp;
 	char is_right_child;
@@ -295,6 +314,7 @@ char sg_delete(t_sg_tree* tree, int key) {
 	return FALSE;
 }
 
+// Update tree on insert, check if inserted node is deep and if so rebalance around a scapegoat
 void sg_on_insert(t_sg_tree* tree, t_sg_node** stack, unsigned int stack_top) {
 	// stack_top equals the depth of the newly inserted node
 	t_sg_node *scapegoat;
@@ -392,6 +412,7 @@ void sg_on_insert(t_sg_tree* tree, t_sg_node** stack, unsigned int stack_top) {
 	}
 }
 
+// 1 if key was not present so new node added, 0 otherwise
 char sg_insert(t_sg_tree* tree, int key) {
 	// Stack to save the nodes traversed to reach insertion point
 	// insertion point max depth = h_alpha + 1
@@ -501,10 +522,16 @@ unsigned int sg_calc_size(t_sg_node* node) {
 	return sg_calc_size(node->left) + 1 + sg_calc_size(node->right);
 }
 
+// Rebuilds the subtree rooted at scapegoat, which size is n
+// Returns the pointer to the new root of the rebuilt subtree
 t_sg_node* sg_rebuild(unsigned int n, t_sg_node* scapegoat) {
-	t_sg_node w, *z, *temp;
+	t_sg_node w, *z;
+
+	#ifdef SECURE_REBUILD
+	t_sg_node *temp;
 	unsigned int size = sg_calc_size(scapegoat);
 	assert(n == size);
+	#endif
 
 	w.key = INT_MAX;
 	w.left = NULL;
@@ -532,13 +559,18 @@ t_sg_node* sg_rebuild(unsigned int n, t_sg_node* scapegoat) {
 	
 	sg_build_tree(n, z);
 
+	#ifdef SECURE_REBUILD
 	assert(w.left != NULL);
 	size = sg_calc_size(w.left);
 	assert(n == size);
+	#endif
 
 	return w.left;
 }
 
+// Flatten the subtree rooted at x and append to the last element
+// of the flattened list the list which head is y.
+// Returns the pointer to the first node of the flattened list
 t_sg_node* sg_flatten(t_sg_node* x, t_sg_node* y) {
 	if (x == NULL) {
 		return y;
@@ -547,6 +579,11 @@ t_sg_node* sg_flatten(t_sg_node* x, t_sg_node* y) {
 	return sg_flatten(x->left, x);
 }
 
+// Builds a 1/2-weight-balanced tree of size n.
+// x is the list of nodes of the tree plus a dummy node at the end,
+// so the size of the list which head is x is n + 1.
+// Returns the pointer to the node which left child is the root of
+// the new balanced tree.
 t_sg_node* sg_build_tree(unsigned int n, t_sg_node* x) {
 	t_sg_node *r, *s;
 

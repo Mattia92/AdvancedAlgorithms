@@ -37,6 +37,8 @@ int main(void) {
 		assert(size - res == sg_calc_size(tree->root));
 	}
 
+	sg_delete_tree(tree);
+
 	printf("Addio mondo\n");
 	return 0;
 }
