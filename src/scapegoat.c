@@ -17,26 +17,25 @@
 // Creates a tree with a given alpha
 t_sg_tree* sg_create_tree(double alpha) {
 	t_sg_tree* tree;
+	printf("=== CREATE(%.2f) - START ===\n", alpha);
 	if (alpha < 0.5 || alpha >= 1) {
-		printf("CREATE - Invalid alpha = %.2f, please choose an alpha in [0.5, 1), using default 0.5\n", alpha);
+		printf("=== CREATE(%.2f) - INVALID ALPHA - Please choose an alpha in [0.5, 1), using default 0.5 ===\n", alpha);
+		alpha = 0.5;
 	}
-	printf("CREATE - Creating scapegoat tree with alpha = %f\n", alpha);
 	tree = malloc(sizeof(t_sg_tree));
 	tree->alpha = alpha;
 	tree->root = NULL;
 	tree->size = 0;
 	tree->max_size = 0;
 	tree->h_alpha = 1;
+	printf("=== CREATE(%.2f) - SUCCESS ===\n", alpha);
 	return tree;
 }
 
-// Deletes all the nodes in the tree
+// Deletes all the nodes in the tree and free the tree data structure
 void sg_delete_tree(t_sg_tree* tree) {
 	sg_delete_node(tree->root);
-	tree->root = NULL;
-	tree->size = 0;
-	tree->max_size = 0;
-	tree->h_alpha = 1;
+	free(tree);
 }
 
 // Recursively delete left and right child,
@@ -88,7 +87,7 @@ t_sg_node* sg_search(t_sg_tree* tree, int key) {
 	}
 
 	#ifdef DEBUG
-	printf("=== SEARCH(%d) - FAIL ===\n", key);
+	printf("=== SEARCH(%d) - FAILURE ===\n", key);
 	#endif
 
 	return NULL;
@@ -311,7 +310,7 @@ char sg_delete(t_sg_tree* tree, int key) {
 	}
 
 	#ifdef DEBUG
-	printf("=== DELETE(%d) - FAIL ===\n", key);
+	printf("=== DELETE(%d) - FAILURE ===\n", key);
 	#endif
 
 	return FALSE;
@@ -454,7 +453,7 @@ char sg_insert(t_sg_tree* tree, int key) {
 		if (key == parent->key) {
 			// Found key, don't overwrite
 			#ifdef DEBUG
-			printf("INSERT(%d) - FAILURE - Key already present\n", key);
+			printf("=== INSERT(%d) - FAILURE - Key already present ===\n", key);
 			#endif
 
 			free(stack);
