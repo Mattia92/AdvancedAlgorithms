@@ -468,11 +468,16 @@ char sg_insert(t_sg_tree* tree, int key) {
 				parent->right->key = key;
 				parent->right->right = NULL;
 				parent->right->left = NULL;
+
+				#ifdef DEBUG
+				printf("INSERT(%d) - Node inserted right\n", key);
+				#endif
+
 				sg_on_insert(tree, stack, stack_top);
 				free(stack);
 
 				#ifdef DEBUG
-				printf("=== INSERT(%d) - SUCCESS - Node inserted right ===\n", key);
+				printf("=== INSERT(%d) - SUCCESS ===\n", key);
 				#endif
 
 				return TRUE;
@@ -490,11 +495,16 @@ char sg_insert(t_sg_tree* tree, int key) {
 				parent->left->key = key;
 				parent->left->right = NULL;
 				parent->left->left = NULL;
+
+				#ifdef DEBUG
+				printf("INSERT(%d) - Node inserted left\n", key);
+				#endif
+
 				sg_on_insert(tree, stack, stack_top);
 				free(stack);
 
 				#ifdef DEBUG
-				printf("=== INSERT(%d) - SUCCESS - Node inserted left ===\n", key);
+				printf("=== INSERT(%d) - SUCCESS ===\n", key);
 				#endif
 
 				return TRUE;
