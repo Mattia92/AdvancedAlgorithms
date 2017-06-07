@@ -1,18 +1,19 @@
 #include <stdio.h>	/* printf */
 #include <math.h>	/* log, floor, ceil, fmax */
 #include <stdlib.h> /* malloc, free */
-#include <limits.h> /* INT_MAX */
 #include "scapegoat.h"
+
+// Compile with -DDEBUG to enable debugging
+
+#ifndef DEBUG
+	#define NDEBUG
+#endif
+#include <assert.h> /* assert */
+
+// Compile with -DSECURE_REBUILD to improve debugging of sg_rebuild
 
 #define TRUE 1
 #define FALSE 0
-
-// FOR BENCHMARK: Uncomment the line below to disable assert
-// #define NDEBUG
-#include <assert.h> /* assert */
-// FOR BENCHMARK: Comment the lines below to disable DEBUG messages and safer tree rebuild procedure
-#define DEBUG
-#define SECURE_REBUILD
 
 // Creates a tree with a given alpha
 t_sg_tree* sg_create_tree(double alpha) {
@@ -545,13 +546,13 @@ t_sg_node* sg_rebuild(unsigned int n, t_sg_node* scapegoat) {
 	assert(n == size);
 	#endif
 
-	w.key = INT_MAX;
+	w.key = 0;
 	w.left = NULL;
 	w.right = NULL;
 
 	z = sg_flatten(scapegoat, &w);
 
-	assert(w.key == INT_MAX && w.left == NULL && w.right == NULL);
+	assert(w.key == 0 && w.left == NULL && w.right == NULL);
 
 	#ifdef SECURE_REBUILD
 	temp = z;
@@ -571,8 +572,9 @@ t_sg_node* sg_rebuild(unsigned int n, t_sg_node* scapegoat) {
 	
 	sg_build_tree(n, z);
 
-	#ifdef SECURE_REBUILD
 	assert(w.left != NULL);
+
+	#ifdef SECURE_REBUILD
 	size = sg_calc_size(w.left);
 	assert(n == size);
 	#endif
