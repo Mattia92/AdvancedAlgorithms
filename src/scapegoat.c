@@ -18,8 +18,9 @@
 t_sg_tree* sg_create_tree(double alpha) {
 	t_sg_tree* tree;
 	printf("=== CREATE(%.2f) - START ===\n", alpha);
-	if (alpha < 0.5 || alpha >= 1) {
-		printf("=== CREATE(%.2f) - INVALID ALPHA - Please choose an alpha in [0.5, 1), using default 0.5 ===\n", alpha);
+	// 0.999 max alpha allowed for numerical stability
+	if (alpha < 0.5 || alpha > 0.999) {
+		printf("=== CREATE(%.2f) - INVALID ALPHA - Please choose an alpha in [0.5, 0.999], using default 0.5 ===\n", alpha);
 		alpha = 0.5;
 	}
 	tree = malloc(sizeof(t_sg_tree));
