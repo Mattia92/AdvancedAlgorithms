@@ -1,5 +1,5 @@
 #include <stdio.h>	/* printf */
-#include <math.h>	/* log, floor, ceil, fmax */
+#include <math.h>	/* log, floor, ceil */
 #include <stdlib.h> /* malloc, free */
 #include "scapegoat.h"
 
@@ -18,7 +18,9 @@
 // Creates a tree with a given alpha
 t_sg_tree* sg_create_tree(double alpha) {
 	t_sg_tree* tree;
+	#ifdef DEBUG
 	printf("=== CREATE(%.2f) - START ===\n", alpha);
+	#endif
 	// 0.999 max alpha allowed for numerical stability
 	if (alpha < 0.5 || alpha > 0.999) {
 		printf("=== CREATE(%.2f) - INVALID ALPHA - Please choose an alpha in [0.5, 0.999], using default 0.5 ===\n", alpha);
@@ -30,13 +32,17 @@ t_sg_tree* sg_create_tree(double alpha) {
 	tree->size = 0;
 	tree->max_size = 0;
 	tree->h_alpha = 1;
+	#ifdef DEBUG
 	printf("=== CREATE(%.2f) - SUCCESS ===\n", alpha);
+	#endif
 	return tree;
 }
 
 // Deletes all the nodes in the tree and free the tree data structure
 void sg_delete_tree(t_sg_tree* tree) {
-	sg_delete_node(tree->root);
+	if (tree->root != NULL) {
+		sg_delete_node(tree->root);
+	}
 	free(tree);
 }
 
@@ -95,12 +101,12 @@ t_sg_node* sg_search(t_sg_tree* tree, int key) {
 	return NULL;
 }
 
-unsigned int h_alpha(unsigned int size, double alpha) {
+inline unsigned int h_alpha(unsigned int size, double alpha) {
 	return (unsigned int)floor(log((double)size) / log(1 / alpha));
 }
 
 // Update h_alpha
-void sg_update_h_alpha(t_sg_tree* tree) {
+inline void sg_update_h_alpha(t_sg_tree* tree) {
 	tree->h_alpha = tree->size < 2 ? 1 : h_alpha(tree->size, tree->alpha);
 }
 
@@ -332,7 +338,9 @@ void sg_on_insert(t_sg_tree* tree, t_sg_node** stack, unsigned int stack_top) {
 
 	// Adjust tree vars
 	++tree->size;
-	tree->max_size = (unsigned int)fmax(tree->size, tree->max_size);
+	if (tree->size > tree->max_size) {
+		tree->max_size = tree->size;
+	}
 	sg_update_h_alpha(tree);
 
 	#ifdef DEBUG
