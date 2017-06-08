@@ -86,6 +86,20 @@ int main(void) {
 	delete(tree, 3, TRUE);
 	assert(tree->root == NULL && tree->size == 0);
 
+	// // check rebalance on insert (scapegoat is root)
+	insert(tree, 1, TRUE);
+	insert(tree, 2, TRUE);
+	check_struct(tree->root, 1, FALSE, 0, TRUE, 2);
+	check_struct(tree->root->right, 2, FALSE, 0, FALSE, 0);
+	insert(tree, 3, TRUE);
+	check_struct(tree->root, 2, TRUE, 1, TRUE, 3);
+	check_struct(tree->root->left, 1, FALSE, 0, FALSE, 0);
+	check_struct(tree->root->right, 3, FALSE, 0, FALSE, 0);
+	delete(tree, 3, TRUE);
+	delete(tree, 1, TRUE);
+	delete(tree, 2, TRUE);
+	assert(tree->root == NULL && tree->size == 0);
+
 	// check structure after a sequence of inserts
 	insert(tree, 100, TRUE);
 	insert(tree, 57, TRUE);
