@@ -1,3 +1,7 @@
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // left == NULL means no left child
 // right == NULL means no right child
 // If leaf left == NULL and RIGHT == NULL
@@ -29,3 +33,7 @@ unsigned int sg_calc_size(t_sg_node* node);
 t_sg_node* sg_rebuild(unsigned int n, t_sg_node* scapegoat);
 t_sg_node* sg_flatten(t_sg_node* x, t_sg_node* y);
 t_sg_node* sg_build_tree(unsigned int n, t_sg_node* x);
+
+#ifdef __cplusplus
+}
+#endif
