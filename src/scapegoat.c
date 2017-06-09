@@ -427,7 +427,8 @@ void sg_on_insert(t_sg_tree* tree, t_sg_node** stack, unsigned int stack_top) {
 // 1 if key was not present so new node added, 0 otherwise
 char sg_insert(t_sg_tree* tree, int key) {
 	// Stack to save the nodes traversed to reach insertion point
-	// insertion point max depth = h_alpha + 1
+	// insertion point max depth = h_alpha + 2, parent of the new node max depth = h_alpha + 1
+	// Root depth = 0, so length of the stack should be max depth + 1, so h_alpha + 2
 	t_sg_node **stack, *parent = tree->root;
 	unsigned int stack_top;
 
@@ -454,7 +455,7 @@ char sg_insert(t_sg_tree* tree, int key) {
 		return TRUE;
 	}
 
-	stack = malloc(sizeof(t_sg_node*) * (tree->h_alpha + 1));
+	stack = malloc(sizeof(t_sg_node*) * (tree->h_alpha + 2));
 	// When inserting a node: stack_top == depth
 	stack_top = 0;
 	stack[stack_top++] = parent;
@@ -526,10 +527,10 @@ char sg_insert(t_sg_tree* tree, int key) {
 			parent = parent->left;
 		}
 
-		// stack size = sg_tree->h_alpha + 1,
-		// last valid stack_top = sg_tree->h_alpha
+		// stack size = sg_tree->h_alpha + 2,
+		// last valid stack_top = sg_tree->h_alpha + 1
 		// This assert avoids infinite loops while debugging
-		assert(stack_top >= 0 && stack_top < tree->h_alpha + 1);
+		assert(stack_top >= 0 && stack_top < tree->h_alpha + 2);
 		stack[stack_top++] = parent;
 	}
 }
