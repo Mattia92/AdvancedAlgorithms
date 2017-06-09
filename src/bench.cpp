@@ -29,6 +29,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include <stdio.h> /* printf */
 #include <stdlib.h> /* malloc, free, rand */
 #include <time.h> /* clock */
+#include <set> /* std::set */
 
 #include "avltree.h"
 #include "scapegoat.h"
@@ -95,19 +96,35 @@ void test_avl(struct avl_tree* avl_tree, unsigned int n, struct ako_node** ako_n
 	}
 }
 
+void test_rb(std::set<int>* rb_tree, unsigned int n, struct ako_node** ako_nodes) {
+	unsigned int i;
+	std::set<int>::iterator it;
+
+	for (i = 0; i < n; ++i) {
+		if (ako_nodes[i]->op == INSERT) { 
+			rb_tree->insert(ako_nodes[i]->key);
+	    } else if (ako_nodes[i]->op == SEARCH) {
+		    it = rb_tree->find(ako_nodes[i]->key);
+	    } else {
+		    rb_tree->erase(ako_nodes[i]->key);
+		}
+	}
+}
+
 int main(void) {
 	double alphas[] = {0.55, 0.6, 0.65, 0.7, 0.75};
-    unsigned int i, j, k, r, M = 1, n = M * 1000 * 1000, n_alphas = sizeof(alphas) / sizeof(alphas[0]), rand_max = 1000;
+    unsigned int i, j, k, r, M = 1, n = M * 1000 * 1000, n_alphas = sizeof(alphas) / sizeof(alphas[0]), rand_max = 10 * 1000;
     time_t begin;
     struct ako_node **ako_nodes, *temp;
     struct avl_tree avl_tree;
     struct sg_tree* sg_tree;
+    std::set<int> rb_tree;
 
     printf("=== BENCHMARK - START ===\n");
 
-    ako_nodes = malloc(sizeof(struct key_nodes_op*) * n);
+    ako_nodes = (ako_node**)malloc(sizeof(struct key_nodes_op*) * n);
     for (i = 0; i < n; ++i) {
-		ako_nodes[i] = malloc(sizeof(struct ako_node));
+		ako_nodes[i] = (ako_node*)malloc(sizeof(struct ako_node));
 	}
 
 	for (k = 0; k < 3; k++) {
@@ -126,43 +143,65 @@ int main(void) {
 				ako_nodes[i] = temp;
 		    }
 		} else if (k == 2) {
-			break;
 			// TODO Not working for AVL, null pointer
 			// Random test
 
-			//printf("BENCHMARK - Random test %dMops, rand_max key = %d\n", M, rand_max);
-		    //for (i = 0; i < n; ++i) {
-			//	ako_nodes[i]->op = rand() % MAX_OP;
-			//	ako_nodes[i]->key = rand() % rand_max;
-		    //}
+			printf("BENCHMARK - Random test %dMops, rand_max key = %d\n", M, rand_max);
+		    for (i = 0; i < n; ++i) {
+				ako_nodes[i]->op = rand() % MAX_OP;
+				ako_nodes[i]->key = rand() % rand_max;
+		    }
 		}
 
-	    // AVL
-	    avl_init(&avl_tree, NULL);
+		if (k != 2) {
+		    // AVL
+		    avl_init(&avl_tree, NULL);
+			for (i = 0; i < n; ++i) {
+				ako_nodes[i]->op = INSERT;
+			}
+		    begin = clock();
+		    test_avl(&avl_tree, n, ako_nodes);
+		    report("AVL INSERT", n, begin);
+			for (i = 0; i < n; ++i) {
+				ako_nodes[i]->op = SEARCH;
+			}
+		    begin = clock();
+		    test_avl(&avl_tree, n, ako_nodes);
+		    report("AVL SEARCH", n, begin);
+			for (i = 0; i < n; ++i) {
+				ako_nodes[i]->op = DELETE;
+			}
+		    begin = clock();
+		    test_avl(&avl_tree, n, ako_nodes);
+		    report("AVL DELETE", n, begin);
+		}
+
+	    // RB
+	    rb_tree.clear();
 	    if (k != 2) {
 			for (i = 0; i < n; ++i) {
 				ako_nodes[i]->op = INSERT;
 		    }
 		}
 	    begin = clock();
-	    test_avl(&avl_tree, n, ako_nodes);
-	    report("AVL INSERT", n, begin);
+	    test_rb(&rb_tree, n, ako_nodes);
+	    report("RB INSERT", n, begin);
 		if (k != 2) {
 		    for (i = 0; i < n; ++i) {
 				ako_nodes[i]->op = SEARCH;
 		    }
 		}
 	    begin = clock();
-	    test_avl(&avl_tree, n, ako_nodes);
-	    report("AVL SEARCH", n, begin);
+	    test_rb(&rb_tree, n, ako_nodes);
+	    report("RB SEARCH", n, begin);
 	    if (k != 2) {
 		    for (i = 0; i < n; ++i) {
 				ako_nodes[i]->op = DELETE;
 		    }
 		}
 	    begin = clock();
-	    test_avl(&avl_tree, n, ako_nodes);
-	    report("AVL DELETE", n, begin);
+	    test_rb(&rb_tree, n, ako_nodes);
+	    report("RB DELETE", n, begin);	    
 
 	    // SG
 	    for (j = 0; j < n_alphas; j++) {
