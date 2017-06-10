@@ -17,6 +17,7 @@ typedef struct sg_tree {
 	unsigned int size;
 	unsigned int max_size;
 	double alpha; // 0.5 <= alpha < 1
+	double log_one_over_alpha;
 	unsigned int h_alpha;
 } t_sg_tree;
 
@@ -30,6 +31,7 @@ char sg_delete(t_sg_tree* tree, int key);
 void sg_on_insert(t_sg_tree* tree, t_sg_node** stack, unsigned int stack_top);
 char sg_insert(t_sg_tree* tree, int key);
 unsigned int sg_calc_size(t_sg_node* node);
+void sg_clear_tree(t_sg_tree* tree);
 t_sg_node* sg_rebuild(unsigned int n, t_sg_node* scapegoat);
 t_sg_node* sg_flatten(t_sg_node* x, t_sg_node* y);
 t_sg_node* sg_build_tree(unsigned int n, t_sg_node* x);

@@ -28,6 +28,7 @@ t_sg_tree* sg_create_tree(double alpha) {
 	}
 	tree = malloc(sizeof(t_sg_tree));
 	tree->alpha = alpha;
+	tree->log_one_over_alpha = log(1 / alpha);
 	tree->root = NULL;
 	tree->size = 0;
 	tree->max_size = 0;
@@ -101,13 +102,13 @@ t_sg_node* sg_search(t_sg_tree* tree, int key) {
 	return NULL;
 }
 
-inline unsigned int h_alpha(unsigned int size, double alpha) {
-	return (unsigned int)floor(log((double)size) / log(1 / alpha));
+inline unsigned int h_alpha(unsigned int size, double log_one_over_alpha) {
+	return (unsigned int)floor(log((double)size) / log_one_over_alpha);
 }
 
 // Update h_alpha
 inline void sg_update_h_alpha(t_sg_tree* tree) {
-	tree->h_alpha = tree->size < 2 ? 1 : h_alpha(tree->size, tree->alpha);
+	tree->h_alpha = tree->size < 2 ? 1 : h_alpha(tree->size, tree->log_one_over_alpha);
 }
 
 // Update tree after node deletion and rebuild tree from root if needed
@@ -542,7 +543,17 @@ unsigned int sg_calc_size(t_sg_node* node) {
 	if (node->left == NULL && node->right == NULL) {
 		return 1;
 	}
-	return sg_calc_size(node->left) + 1 + sg_calc_size(node->right);
+	return (node->left == NULL ? 0 : sg_calc_size(node->left)) + 1 + (node->right == NULL ? 0 : sg_calc_size(node->right));
+}
+
+void sg_clear_tree(t_sg_tree* tree) {
+	if (tree->root != NULL) {
+		sg_delete_node(tree->root);
+		tree->root = NULL;
+	}
+	tree->h_alpha = 1;
+	tree->max_size = 0;
+	tree->size = 0;
 }
 
 // Rebuilds the subtree rooted at scapegoat, which size is n
@@ -554,15 +565,14 @@ t_sg_node* sg_rebuild(unsigned int n, t_sg_node* scapegoat) {
 	t_sg_node *temp;
 	unsigned int size = sg_calc_size(scapegoat);
 	assert(n == size);
-	#endif
-
 	w.key = 0;
 	w.left = NULL;
 	w.right = NULL;
+	#endif
 
 	z = sg_flatten(scapegoat, &w);
 
-	assert(w.key == 0 && w.left == NULL && w.right == NULL);
+	// assert(w.key == 0 && w.left == NULL && w.right == NULL);
 
 	#ifdef SECURE_REBUILD
 	temp = z;
@@ -582,9 +592,8 @@ t_sg_node* sg_rebuild(unsigned int n, t_sg_node* scapegoat) {
 	
 	sg_build_tree(n, z);
 
-	assert(w.left != NULL);
-
 	#ifdef SECURE_REBUILD
+	assert(w.left != NULL);
 	size = sg_calc_size(w.left);
 	assert(n == size);
 	#endif
