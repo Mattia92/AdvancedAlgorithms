@@ -148,9 +148,9 @@ void sg_on_delete(t_sg_tree* tree) {
 }
 
 // 1 if key found and node deleted, 0 otherwise
-char sg_delete(t_sg_tree* tree, int key) {
+unsigned char sg_delete(t_sg_tree* tree, int key) {
 	t_sg_node *parent = NULL, *to_remove = tree->root, *replacement, *temp;
-	char is_right_child;
+	unsigned char is_right_child;
 
 	#ifdef DEBUG
 	printf("=== DELETE(%d) - START ===\n", key);
@@ -426,7 +426,7 @@ void sg_on_insert(t_sg_tree* tree, t_sg_node** stack, unsigned int stack_top) {
 }
 
 // 1 if key was not present so new node added, 0 otherwise
-char sg_insert(t_sg_tree* tree, int key) {
+unsigned char sg_insert(t_sg_tree* tree, int key) {
 	// Stack to save the nodes traversed to reach insertion point
 	// insertion point max depth = h_alpha + 2, parent of the new node max depth = h_alpha + 1
 	// Root depth = 0, so length of the stack should be max depth + 1, so h_alpha + 2

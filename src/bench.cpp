@@ -24,7 +24,7 @@ inline void report(unsigned int n, time_t begin) {
 	printf("%.3f s, %.3f Mop/s\n", t, n / (t * 1000 * 1000));
 }
 
-void bench_sg(char* type, t_sg_tree* sg_tree, unsigned int n, struct bench_node** bench_nodes) {
+void bench_sg(const char* type, t_sg_tree* sg_tree, unsigned int n, struct bench_node** bench_nodes) {
 	unsigned int i;
 	t_sg_node *sg_node;
 	time_t begin;
@@ -44,7 +44,7 @@ void bench_sg(char* type, t_sg_tree* sg_tree, unsigned int n, struct bench_node*
 	report(n, begin);
 }
 
-void bench_rb(char* type, std::set<int>* rb_tree, unsigned int n, struct bench_node** bench_nodes) {
+void bench_rb(const char* type, std::set<int>* rb_tree, unsigned int n, struct bench_node** bench_nodes) {
 	unsigned int i;
 	std::set<int>::iterator it;
 	time_t begin;
@@ -66,7 +66,7 @@ void bench_rb(char* type, std::set<int>* rb_tree, unsigned int n, struct bench_n
 
 int main(void) {
 	double alphas[] = {0.55, 0.6, 0.65, 0.7, 0.75};
-    unsigned int i, j, k, r, M = 1, n = M * 1000 * 1000, n_alphas = sizeof(alphas) / sizeof(alphas[0]), rand_max = 10 * 1000;
+    unsigned int i, j, k, r, M = 10, n = M * 1000 * 1000, n_alphas = sizeof(alphas) / sizeof(alphas[0]), rand_max = 10 * 1000;
     struct bench_node **bench_nodes, *temp;
     struct sg_tree* sg_tree[sizeof(alphas) / sizeof(alphas[0])];
     std::set<int> rb_tree;
@@ -103,6 +103,7 @@ int main(void) {
 		// RB
 		rb_tree.clear();
 
+		printf("BENCHMARK - RB\n");
 		for (i = 0; i < n; ++i) {
 			bench_nodes[i]->op = INSERT;
 		}
@@ -122,6 +123,7 @@ int main(void) {
 		for (j = 0; j < n_alphas; j++) {
 			sg_clear_tree(sg_tree[j]);
 
+			printf("BENCHMARK - SG-%.2f\n", alphas[j]);
 			for (i = 0; i < n; ++i) {
 				bench_nodes[i]->op = INSERT;
 			}
@@ -148,11 +150,13 @@ int main(void) {
 
 	// RB
 	rb_tree.clear();
+	printf("BENCHMARK - RB\n");
 	bench_rb("RANDOM", &rb_tree, n, bench_nodes);
 
 	// SG
 	for (j = 0; j < n_alphas; j++) {
 		sg_clear_tree(sg_tree[j]);
+		printf("BENCHMARK - SG-%.2f\n", alphas[j]);
 		bench_sg("RANDOM", sg_tree[j], n, bench_nodes);
 	}
 

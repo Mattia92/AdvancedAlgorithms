@@ -5,11 +5,11 @@
 
 int main(void) {
 	t_sg_tree* tree;
-	unsigned int i, k = 10000, rand_max = 10000, size;
+	unsigned int i, k = 1000, rand_max = 100, size;
 	int val;
 	char res;
 
-	printf("Ciao mondo\n");
+	printf("=== TEST RANDOM - START ===\n");
 
 	tree = sg_create_tree(0.55);
 
@@ -39,6 +39,7 @@ int main(void) {
 
 	sg_delete_tree(tree);
 
-	printf("Addio mondo\n");
+	printf("=== TEST RANDOM - END ===\n");
+
 	return 0;
 }
