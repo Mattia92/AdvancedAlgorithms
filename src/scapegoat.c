@@ -329,7 +329,8 @@ unsigned char sg_delete(t_sg_tree* tree, int key) {
 void sg_on_insert(t_sg_tree* tree, t_sg_node** stack, unsigned int stack_top) {
 	// stack_top equals the depth of the newly inserted node
 	t_sg_node *scapegoat;
-	unsigned int scapegoat_left_size, scapegoat_right_size, scapegoat_size = 0;
+	//i0 is the depth of the newly inserted node (starting from 0 at root)
+	unsigned int i0 = stack_top, scapegoat_left_size, scapegoat_right_size, scapegoat_size = 0;
 
 	assert((stack_top == 0 && stack == NULL) || (stack_top > 0 && stack != NULL));
 
@@ -396,10 +397,10 @@ void sg_on_insert(t_sg_tree* tree, t_sg_node** stack, unsigned int stack_top) {
 					stack_top,
 					scapegoat->key);
 				#endif
-			} else {
+			} else if ((i0 - stack_top) > h_alpha(scapegoat_size, tree->log_one_over_alpha)) {
 				// Scapegoat found
 				#ifdef DEBUG
-				printf("ON INSERT - depth = %d, scapegoat found! node %d is not alpha-weight-balanced\n",
+				printf("ON INSERT - depth = %d, scapegoat found! node %d is not alpha-weight-balanced and satisfies heuristic\n",
 					stack_top,
 					scapegoat->key);
 				#endif
@@ -420,6 +421,12 @@ void sg_on_insert(t_sg_tree* tree, t_sg_node** stack, unsigned int stack_top) {
 				printf("ON INSERT - END - Tree rebalanced\n");
 				#endif
 				return;
+			} else {
+				#ifdef DEBUG
+				printf("ON INSERT - depth = %d, node %d is not alpha-weight-balanced, but it doesn't satisfy heuristic\n",
+					stack_top,
+					scapegoat->key);
+				#endif
 			}
 		}
 	}
