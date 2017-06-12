@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <stdlib.h>
 #include "test_utils.h"
 
 void check_insert(t_sg_tree* tree, int key, unsigned char expected_result) {
