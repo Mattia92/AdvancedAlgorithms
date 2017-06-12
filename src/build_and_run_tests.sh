@@ -1,5 +1,5 @@
-function pause(){
-read -n1 -r -p "Press any key to continue..." key
+function pause() {
+	read -n1 -r -p "Press any key to continue..." key
 }
 
 clang -Wall -Wextra -DDEBUG -O3 -o test_random test_random.c scapegoat.c test_utils.c
