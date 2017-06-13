@@ -118,15 +118,15 @@ void sg_on_delete(t_sg_tree* tree) {
 	#endif
 
 	// Decrease tree size
-    --tree->size;
-    // Update h_alpha
-    sg_update_h_alpha(tree);
+	--tree->size;
+	// Update h_alpha
+	sg_update_h_alpha(tree);
 
-    #ifdef DEBUG
-    printf("ON DELETE - tree->size = %d, tree->h_alpha = %d\n", tree->size, tree->h_alpha);
-    #endif
+	#ifdef DEBUG
+	printf("ON DELETE - tree->size = %d, tree->h_alpha = %d\n", tree->size, tree->h_alpha);
+	#endif
 
-    // Check if rebalance is needed		
+	// Check if rebalance is needed		
 	if (tree->size >= 3 && tree->size < tree->alpha * tree->max_size) {
 		#ifdef DEBUG
 		printf("ON DELETE - Rebalancing tree\n");
@@ -193,15 +193,15 @@ unsigned char sg_delete(t_sg_tree* tree, int key) {
 
 					if (is_right_child) {
 						assert(parent->right == to_remove);
-                		parent->right = NULL;
+						parent->right = NULL;
 					}
-             		else {
-             			assert(parent->left == to_remove);
-             			parent->left = NULL;
-             		}
+			 		else {
+			 			assert(parent->left == to_remove);
+			 			parent->left = NULL;
+			 		}
 				}
-             	free(to_remove);
-            // 2) to_remove has only one child
+			 	free(to_remove);
+			// 2) to_remove has only one child
 			} else if (to_remove->left == NULL || to_remove->right == NULL) {
 				// temp is the only child of to_remove
 				temp = to_remove->left != NULL ? to_remove->left : to_remove->right;
