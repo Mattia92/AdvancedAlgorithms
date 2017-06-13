@@ -152,12 +152,14 @@ int main(void) {
 	rb_tree.clear();
 	printf("BENCHMARK - RB\n");
 	bench_rb("RANDOM", &rb_tree, n, bench_nodes);
+	rb_tree.clear();
 
 	// SG
 	for (j = 0; j < n_alphas; j++) {
 		sg_clear_tree(sg_tree[j]);
 		printf("BENCHMARK - SG-%.2f\n", alphas[j]);
 		bench_sg("RANDOM", sg_tree[j], n, bench_nodes);
+		sg_clear_tree(sg_tree[j]);
 	}
 
 	for (j = 0; j < n_alphas; j++) {
