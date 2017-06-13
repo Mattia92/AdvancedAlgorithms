@@ -11,8 +11,8 @@
 #define MAX_OP 3
 
 struct bench_node {
-    int key;
-    unsigned char op : 2;
+	int key;
+	unsigned char op : 2;
 };
 
 inline double time_elapsed(time_t begin, time_t end) {
@@ -66,15 +66,15 @@ void bench_rb(const char* type, std::set<int>* rb_tree, unsigned int n, struct b
 
 int main(void) {
 	double alphas[] = {0.55, 0.6, 0.65, 0.7, 0.75};
-    unsigned int i, j, k, r, M = 10, n = M * 1000 * 1000, n_alphas = sizeof(alphas) / sizeof(alphas[0]), rand_max = 10 * 1000;
-    struct bench_node **bench_nodes, *temp;
-    struct sg_tree* sg_tree[sizeof(alphas) / sizeof(alphas[0])];
-    std::set<int> rb_tree;
+	unsigned int i, j, k, r, M = 10, n = M * 1000 * 1000, n_alphas = sizeof(alphas) / sizeof(alphas[0]), rand_max = 10 * 1000;
+	struct bench_node **bench_nodes, *temp;
+	struct sg_tree* sg_tree[sizeof(alphas) / sizeof(alphas[0])];
+	std::set<int> rb_tree;
 
-    printf("=== BENCHMARK - START ===\n");
+	printf("=== BENCHMARK - START ===\n");
 
-    bench_nodes = (bench_node**)malloc(sizeof(struct bench_node*) * n);
-    for (i = 0; i < n; ++i) {
+	bench_nodes = (bench_node**)malloc(sizeof(struct bench_node*) * n);
+	for (i = 0; i < n; ++i) {
 		bench_nodes[i] = (bench_node*)malloc(sizeof(struct bench_node));
 	}
 
@@ -173,5 +173,5 @@ int main(void) {
 
 	printf("=== BENCHMARK - END ===\n");
 
-    return 0;
+	return 0;
 }
