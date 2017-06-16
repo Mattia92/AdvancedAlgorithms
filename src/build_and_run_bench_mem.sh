@@ -2,7 +2,7 @@ function pause() {
 	read -n1 -r -p "Press any key to continue..." key
 }
 
-clang -Wall -Wextra -O3 -o bench_sg_mem bench_sg_mem.c scapegoat.c
+clang -Wall -Wextra -O3 -o bench_sg_mem bench_sg_mem.c scapegoat.c -lm
 pause
 ./bench_sg_mem
 pause
